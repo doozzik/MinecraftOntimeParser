@@ -1,3 +1,5 @@
+package me.doozzik;
+
 import javax.swing.*;
 import java.awt.event.*;
 

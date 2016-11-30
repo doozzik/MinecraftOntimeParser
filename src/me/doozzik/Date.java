@@ -1,3 +1,5 @@
+package me.doozzik;
+
 class Date {
     private String date;
     private int pNew;
