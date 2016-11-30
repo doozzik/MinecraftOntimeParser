@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 
 public class Main extends JDialog {
@@ -8,12 +7,19 @@ public class Main extends JDialog {
     private JButton startButton;
     private JLabel statusLabel;
     private JCheckBox createDatabaseCheckBox;
-    private JButton showStatisticButton;
     private JTextArea statisticOut;
     private JComboBox reportType;
-    private Convert convert;
+
+    private class DummyFrame extends JFrame {
+        DummyFrame(String title) {
+            super(title);
+            setUndecorated(true);
+            setVisible(true);
+        }
+    }
 
     public Main() {
+        new DummyFrame("Minecraft OnTime parser");
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(startButton);
@@ -26,12 +32,6 @@ public class Main extends JDialog {
         startButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onConvertToSqlite();
-            }
-        });
-
-        showStatisticButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onShowStatistic();
             }
         });
 
@@ -52,11 +52,7 @@ public class Main extends JDialog {
     }
 
     private void onConvertToSqlite() {
-        convert = new Convert(pathTextField.getText(), createDatabaseCheckBox, startButton, statusLabel, showStatisticButton, reportType);
-    }
-
-    private void onShowStatistic(){
-        Statistic statistic = new Statistic(convert.getPlayers(), convert.getDates(), statisticOut);
+        new Convert(pathTextField.getText(), createDatabaseCheckBox, startButton, statusLabel, reportType, statisticOut);
     }
 
     private void onCancel() {

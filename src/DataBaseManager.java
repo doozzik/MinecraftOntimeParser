@@ -2,11 +2,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DataBaseManager {
+class DataBaseManager {
     private String baseName;
     private String baseTableName;
 
-    public DataBaseManager(boolean addToBase){
+    DataBaseManager(boolean addToBase){
         baseName = "ontime.db";
         baseTableName = "PLAYERS";
 
@@ -48,7 +48,7 @@ public class DataBaseManager {
         con.close();
     }
 
-    public void addToBase(Player p) throws ClassNotFoundException, SQLException {
+    void addToBase(Player p) throws ClassNotFoundException, SQLException {
         java.sql.Connection con = null;
         Statement stmt = null;
 
@@ -56,8 +56,8 @@ public class DataBaseManager {
         con.setAutoCommit(false);
 
         stmt = con.createStatement(); // replace("\"", "\"\"")
-        String sql = "INSERT INTO " + baseTableName + " (NAME,FIRSTSEEN,LASTSEEN,DAYS) " +
-                "VALUES ('" + p.getName() + "','" + p.getFirstSeen() + "','" + p.getLastSeen() + "','" + p.getDays() + "');";
+        String sql = "INSERT INTO " + baseTableName + " (NAME,FIRSTSEEN,LASTSEEN) " +
+                "VALUES ('" + p.getName() + "','" + p.getFirstSeen() + "','" + p.getLastSeen() + "');";
         try{
             stmt.executeUpdate(sql);
         }finally{

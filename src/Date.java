@@ -1,39 +1,29 @@
-public class Date {
+class Date {
     private String date;
     private int pNew;
     private int pLost;
-    private int pOld;
-    private int pTotal;
 
-    public Date(String date){
+    Date(String date){
         this.date = date;
     }
 
-    public void addNew(){
+    void addNew(){
         pNew++;
     }
 
-    public void addLost(){
+    void addLost(){
         pLost++;
     }
 
-    public void addOld(){
-        pOld++;
-    }
-
-    public void addTotal(){
-        pTotal++;
-    }
-
-    public String getDate() {
+    String getDate() {
         return date;
     }
 
-    public int getpNew() {
+    int getpNew() {
         return pNew;
     }
 
-    public int getpLost() {
+    int getpLost() {
         return pLost;
     }
 }

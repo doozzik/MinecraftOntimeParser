@@ -1,36 +1,39 @@
 import javax.swing.*;
-import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-public class Convert implements Runnable {
+class Convert implements Runnable {
     private String path;
     private JLabel statusLabel;
     private JCheckBox databaseCheckBox;
     private JButton startButton;
     private List<Player> players;
-    private JButton showStatisticButton;
     private List<Date> dates;
     private JComboBox reportType;
+    private JTextArea statisticOut;
 
-    public Convert(String path, JCheckBox databaseCheckBox, JButton startButton, JLabel statusLabel, JButton showStatisticButton, JComboBox reportType) {
+    Convert(String path, JCheckBox databaseCheckBox, JButton startButton, JLabel statusLabel, JComboBox reportType, JTextArea statisticOut) {
         this.path = path;
         this.statusLabel = statusLabel;
         this.databaseCheckBox = databaseCheckBox;
         this.startButton = startButton;
         this.players = new ArrayList<>();
-        this.showStatisticButton = showStatisticButton;
         this.dates = new ArrayList<>();
         this.reportType = reportType;
+        this.statisticOut = statisticOut;
         Thread t = new Thread(this);
         t.start();
     }
 
     private List<String> listFiles(String path){
-        List<String> results = new ArrayList<String>();
+        List<String> results = new ArrayList<>();
         File[] files = new File(path).listFiles();
+        if (files == null){
+            statusLabel.setText("Error: Directory not exist or is empty.");
+        }
         for (File file : files) {
             if (file.isFile()) {
                 if (file.getName().contains(reportType.getSelectedItem().toString())){
@@ -49,7 +52,7 @@ public class Convert implements Runnable {
             line = line.substring(index1);
             line = line.trim();
             int index2 = line.indexOf(" ");
-            String pName = line.substring(0, index2);
+            String pName = line.substring(0, index2).toLowerCase();
             //line = line.substring(index2);
             //line = line.trim();
             return new Player(pName);
@@ -66,23 +69,40 @@ public class Convert implements Runnable {
     private void controlsToggle(boolean value){
         //databaseCheckBox.setEnabled(value);
         startButton.setEnabled(value);
-        showStatisticButton.setEnabled(value);
         reportType.setEnabled(value);
     }
 
-    public List<Player> getPlayers(){
-        return players;
-    }
+    private void statistic(){
+        for (Player p : players){
+            for (Date d : dates){
+                if (d.getDate().equals(p.getFirstSeen())){
+                    d.addNew();
+                }
+                if (d.getDate().equals(p.getLastSeen())){
+                    d.addLost();
+                }
+            }
+        }
 
-    public List<Date> getDates(){
-        return dates;
+        String text = "Date / new players / lost players / difference\n";
+        for (Date d : dates){
+            text += d.getDate() + " / " + d.getpNew() + " / " + d.getpLost() + " / " + (d.getpNew() - d.getpLost()) + "\n";
+        }
+        statisticOut.setText(text);
     }
 
     @Override
     public void run() {
         List<String> files = listFiles(path);
-        DataBaseManager dbmanager = new DataBaseManager(databaseCheckBox.isSelected());
+        DataBaseManager dbManager = new DataBaseManager(databaseCheckBox.isSelected());
         controlsToggle(false);
+
+        ArrayList<ArrayList<Player>> allPlayers = new ArrayList<>();
+
+        String alphabet = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./!@#$%^&*()_+{}:\"/<>?`~";
+        for (int i = 0; i < alphabet.length(); i++){
+            allPlayers.add(new ArrayList<>());
+        }
 
         try{
             for (String file : files){
@@ -97,32 +117,20 @@ public class Convert implements Runnable {
                 {
                     Player p = convertToPlayer(line);
                     if (p != null){
-                        boolean exist = false;
-                        for (Player pl : players){
-                            if (pl.getName().equals(p.getName())){
-                                pl.addDays();
-                                if (pl.getFirstSeen() == null){
-                                    pl.setFirstSeen(filePathToTime(file));
-                                }
-                                pl.setLastSeen(filePathToTime(file));
-                                exist = true;
-                                break;
-                            }
-                        }
-                        if (!exist){
-                            p.setFirstSeen(filePathToTime(file));
-                            p.setLastSeen(filePathToTime(file));
-                            players.add(p);
-                        }
+                        findPlayer(p, file, allPlayers.get(alphabet.indexOf(p.getName().charAt(0))));
                     }
                     line = in.readLine();
                 }
             }
 
+            for (List<Player> list : allPlayers){
+                players.addAll(list);
+            }
+
             if (databaseCheckBox.isSelected()){
                 for (Player p : players){
                     statusLabel.setText("Adding to base player " + players.indexOf(p) + " / " + players.size());
-                    dbmanager.addToBase(p);
+                    dbManager.addToBase(p);
                 }
             }
         } catch (IOException | ClassNotFoundException | SQLException e) {
@@ -134,5 +142,24 @@ public class Convert implements Runnable {
 
         controlsToggle(true);
         statusLabel.setText("Job done.");
+        statistic();
+    }
+
+    private void findPlayer(Player p, String file, List<Player> players){
+        boolean exist = false;
+        for (Player pl : players){
+            if (pl.getName().equals(p.getName())){
+                if (pl.getFirstSeen() == null){
+                    pl.setFirstSeen(filePathToTime(file));
+                }
+                pl.setLastSeen(filePathToTime(file));
+                exist = true;
+            }
+        }
+        if (!exist){
+            p.setFirstSeen(filePathToTime(file));
+            p.setLastSeen(filePathToTime(file));
+            players.add(p);
+        }
     }
 }
