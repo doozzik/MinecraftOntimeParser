@@ -12,11 +12,12 @@ class Convert implements Runnable {
     private JCheckBox databaseCheckBox;
     private JButton startButton;
     private List<Player> players;
-    private List<Date> dates;
+    List<Date> dates;
     private JComboBox reportType;
     private JTextArea statisticOut;
+    private JButton showGraphButton;
 
-    Convert(String path, JCheckBox databaseCheckBox, JButton startButton, JLabel statusLabel, JComboBox reportType, JTextArea statisticOut) {
+    Convert(String path, JCheckBox databaseCheckBox, JButton startButton, JLabel statusLabel, JComboBox reportType, JTextArea statisticOut, JButton showGraphButton) {
         this.path = path;
         this.statusLabel = statusLabel;
         this.databaseCheckBox = databaseCheckBox;
@@ -25,6 +26,7 @@ class Convert implements Runnable {
         this.dates = new ArrayList<>();
         this.reportType = reportType;
         this.statisticOut = statisticOut;
+        this.showGraphButton = showGraphButton;
         Thread t = new Thread(this);
         t.start();
     }
@@ -71,6 +73,7 @@ class Convert implements Runnable {
         //databaseCheckBox.setEnabled(value);
         startButton.setEnabled(value);
         reportType.setEnabled(value);
+        showGraphButton.setEnabled(value);
     }
 
     private void statistic(){
